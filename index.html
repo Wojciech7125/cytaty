@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cytat</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #f4f1ea;
+    color: #2a2a2a;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow: hidden;
+  }
+  .container {
+    max-width: 700px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  #quote {
+    font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+    line-height: 1.5;
+    font-style: italic;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  #quote.visible { opacity: 1; }
+  .hint {
+    margin-top: 2.5rem;
+    font-size: 0.85rem;
+    color: #8a8478;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .error {
+    color: #a04040;
+    font-style: normal;
+    font-size: 1rem;
+  }
+</style>
+</head>
+<body>
+  <div class="container" onclick="losuj()">
+    <p id="quote">Wczytywanie…</p>
+    <p class="hint">Dotknij, aby wylosować ponownie</p>
+  </div>
+
+<script>
+  let cytaty = [];
+  const el = document.getElementById('quote');
+
+  async function wczytaj() {
+    try {
+      const res = await fetch('cytaty.txt?v=' + Date.now());
+      if (!res.ok) throw new Error('Nie znaleziono pliku cytaty.txt');
+      const text = await res.text();
+      cytaty = text
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 0 && !l.startsWith('#'));
+      if (cytaty.length === 0) throw new Error('Plik cytaty.txt jest pusty');
+      losuj();
+    } catch (e) {
+      el.textContent = 'Błąd: ' + e.message;
+      el.classList.add('visible', 'error');
+    }
+  }
+
+  function losuj() {
+    if (cytaty.length === 0) return;
+    el.classList.remove('visible');
+    setTimeout(() => {
+      const i = Math.floor(Math.random() * cytaty.length);
+      el.textContent = '„' + cytaty[i] + '"';
+      el.classList.add('visible');
+    }, 200);
+  }
+
+  wczytaj();
+</script>
+</body>
+</html>
